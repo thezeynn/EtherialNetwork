@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Premain-Class: com.etherial.agent.EtherialAgent
+Agent-Class: com.etherial.agent.EtherialAgent
+Can-Redefine-Classes: true
+Can-Retransform-Classes: true

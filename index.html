@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="tr" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Etherial Client</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-cyber-bg text-cyber-text antialiased overflow-hidden select-none">
+    <div id="root"></div>
+    <script>
+      // Tauri v2 Standalone Desktop Bridge
+      if (!window.__TAURI_INTERNALS__) {
+        const listeners = new Map();
+        window.__TAURI_INTERNALS__ = {
+          invoke: async (cmd, args) => {
+            const res = await fetch(`/api/invoke/${cmd}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(args || {}),
+            });
+            const data = await res.json();
+            if (data && data.error) throw new Error(data.error);
+            return data;
+          },
+          transformCallback: (callback) => {
+            const id = Math.random().toString(36).substring(7);
+            window["__TAURI_CB_" + id] = callback;
+            return id;
+          },
+          unregisterCallback: (id) => {
+            delete window["__TAURI_CB_" + id];
+          },
+        };
+
+        // Window controls shim
+        window.__TAURI_WINDOW__ = {
+          minimize: async () => {},
+          close: async () => { window.close(); },
+        };
+
+        // Event stream shim
+        const evtSource = new EventSource("/api/events");
+        evtSource.onmessage = (e) => {
+          try {
+            const data = JSON.parse(e.data);
+            if (data.event && listeners.has(data.event)) {
+              listeners.get(data.event).forEach((fn) => fn({ payload: data.payload }));
+            }
+          } catch (err) {}
+        };
+
+        window.__TAURI_EVENT_PLUGIN_INTERNALS__ = {
+          unregisterListener: (event, id) => {
+            if (listeners.has(event)) {
+              listeners.delete(event);
+            }
+          },
+        };
+
+        // Hook window.__TAURI_EVENT_LISTENERS__
+        window.addEventListener("tauri-event-register", (e) => {
+          const { event, handler } = e.detail;
+          if (!listeners.has(event)) listeners.set(event, []);
+          listeners.get(event).push(handler);
+        });
+      }
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

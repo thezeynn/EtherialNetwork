@@ -1,0 +1,30 @@
+[package]
+name = "etherial-core"
+version = "1.0.0"
+description = "Core native backend for Etherial Launcher"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2.0.0", features = [] }
+
+[dependencies]
+tauri = { version = "2.0.0", features = [] }
+tauri-plugin-shell = "2.0.0"
+tauri-plugin-fs = "2.0.0"
+tauri-plugin-os = "2.0.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.38", features = ["full"] }
+reqwest = { version = "0.12", features = ["json", "stream"] }
+sha1 = "0.10"
+zip = "2.1"
+dirs = "5.0"
+sysinfo = "0.30"
+futures-util = "0.3"
+walkdir = "2.5"
+md5 = "0.7"
+byteorder = "1.5"
+regex = "1.10"
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]
